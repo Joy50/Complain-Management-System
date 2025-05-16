@@ -1,0 +1,40 @@
+<div class="col-md-3 col-lg-2 d-md-block sidebar bg-primary text-white collapse show">
+    <div class="position-sticky pt-3">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center text-white mb-4" href="{% url 'dashboard' %}">
+            <i class="fas fa-headset me-2"></i>
+            <span>Complaint Manager</span>
+        </a>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active text-white" href="{% url 'dashboard' %}">
+                    <i class="fas fa-home me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{% url 'complain_list' %}">
+                    <i class="fas fa-inbox me-2"></i>
+                    Complaints
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Analytics
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="#">
+                    <i class="fas fa-users me-2"></i>
+                    Users
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white" href="{%url 'logout' %}">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

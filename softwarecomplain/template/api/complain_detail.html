@@ -1,0 +1,224 @@
+{% extends 'api/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'api/sidebar.html' %}
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Complaint Details #SC-{{ complain.id }}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <a href="{% url 'complain_update' complain.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i> Print
+                        </button>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-dark">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Complaint Details Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Complaint Information</h5>
+                    <span class="badge 
+                        {% if complain.status == 'initiated' %}bg-secondary
+                        {% elif complain.status == 'in_progress' %}bg-warning
+                        {% else %}bg-success{% endif %}">
+                        {{ complain.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Software</h6>
+                                <p>{{ complain.software.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted">Organization</h6>
+                                <p>{{ complain.organization }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted">Contact Email</h6>
+                                <p>{{ complain.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted">Created</h6>
+                                <p>{{ complain.created_at|date:"F j, Y H:i" }} ({{ complain.created_at|timesince }} ago)</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted">Last Updated</h6>
+                                <p>
+                                    {% if complain.updated_at %}
+                                        {{ complain.updated_at|date:"F j, Y H:i" }} ({{ complain.updated_at|timesince }} ago)
+                                    {% else %}
+                                        Never updated
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted">Created By</h6>
+                                <p>{{ complain.created_by.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problem Description Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Problem Description</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted">Detailed Description</h6>
+                        <p class="white-space-pre-line">{{ complain.problem_description }}</p>
+                    </div>
+                    
+                    {% if complain.attached_document %}
+                    <div class="mb-3">
+                        <h6 class="text-muted">Attached Document</h6>
+                        <a href="{{ complain.attached_document.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="fas fa-file-download me-1"></i> Download Document
+                        </a>
+                        <small class="text-muted ms-2">{{ complain.attached_document.name|slice:"20:" }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Status History Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Status History</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline">
+                        <li class="timeline-item">
+                            <span class="timeline-icon bg-primary">
+                                <i class="fas fa-bug"></i>
+                            </span>
+                            <div class="timeline-content">
+                                <h6>Complaint Created</h6>
+                                <p class="text-muted small">{{ complain.created_at|date:"F j, Y H:i" }}</p>
+                                <p>Complaint was submitted by {{ complain.created_by.email }}</p>
+                            </div>
+                        </li>
+                        
+                        {% if complain.status != 'initiated' %}
+                        <li class="timeline-item">
+                            <span class="timeline-icon bg-warning">
+                                <i class="fas fa-spinner"></i>
+                            </span>
+                            <div class="timeline-content">
+                                <h6>Status Changed to In Progress</h6>
+                                <p class="text-muted small">
+                                    {% if complain.updated_at %}
+                                        {{ complain.updated_at|date:"F j, Y H:i" }}
+                                    {% else %}
+                                        Unknown date
+                                    {% endif %}
+                                </p>
+                                <p>Complaint was assigned for resolution</p>
+                            </div>
+                        </li>
+                        {% endif %}
+                        
+                        {% if complain.status == 'resolved' %}
+                        <li class="timeline-item">
+                            <span class="timeline-icon bg-success">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <div class="timeline-content">
+                                <h6>Complaint Resolved</h6>
+                                <p class="text-muted small">{{ complain.resolved_at|date:"F j, Y H:i" }}</p>
+                                <p>Complaint was marked as resolved</p>
+                            </div>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between mb-4">
+                <div>
+                    {% if complain.status != 'resolved' %}
+                    <form method="post" action="{% url 'complain_update' complain.pk %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success me-2">
+                            <i class="fas fa-check-circle me-1"></i> Mark as Resolved
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <a href="{% url 'complain_update' complain.pk %}" class="btn btn-primary me-2">
+                        <i class="fas fa-edit me-1"></i> Edit Complaint
+                    </a>
+                </div>
+                
+                <div>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                    <button type="button" class="btn btn-outline-dark" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> Print
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<style>
+    /* Timeline styling */
+    .timeline {
+        list-style-type: none;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+    
+    .timeline-item {
+        padding-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-icon {
+        position: absolute;
+        left: -2rem;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+    
+    .timeline-content {
+        padding-left: 0.5rem;
+    }
+    
+    /* Preserve line breaks in description */
+    .white-space-pre-line {
+        white-space: pre-line;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'api/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'api/sidebar.html' %}
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Update Complaint</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'complain_list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.software.label_tag }}
+                                    {{ form.software }}
+                                    {% if form.software.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.software.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.organization.label_tag }}
+                                    {{ form.organization }}
+                                    {% if form.organization.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.organization.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.referred_by.label_tag }}
+                            {{ form.referred_by }}
+                            {% if form.referred_by.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.referred_by.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Optional field</div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.problem_description.label_tag }}
+                            {{ form.problem_description }}
+                            {% if form.problem_description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.problem_description.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.attached_document.label_tag }}
+                            {{ form.attached_document }}
+                            {% if form.attached_document.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.attached_document.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                You may upload a new file to replace the existing one. Supported formats: PDF, DOC/DOCX, XLS/XLSX, JPG/PNG (Max 5MB)
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.status.label_tag }}
+                            {{ form.status }}
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Update Complaint
+                            </button>
+                            <a href="{% url 'complain_list' %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Add Bootstrap validation classes
+    $('form').on('submit', function() {
+        $(this).addClass('was-validated');
+    });
+
+    // File input styling
+    $('input[type="file"]').change(function(e) {
+        var fileName = e.target.files[0]?.name || 'No file selected';
+        $(this).next('.form-file-text').text(fileName);
+    });
+});
+</script>
+{% endblock %}

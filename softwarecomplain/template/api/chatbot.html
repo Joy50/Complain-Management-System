@@ -1,0 +1,156 @@
+<!-- Add this to your base template or where the chatbot is included -->
+<div class="chatbot-container">
+    <div class="chatbot-header d-flex justify-content-between align-items-center" id="chatbotToggle">
+        <div>
+            <i class="fas fa-robot me-2"></i>
+            <span>Complaint Assistant</span>
+        </div>
+        <i class="fas fa-chevron-up" id="chatbotIcon"></i>
+    </div>
+    <div class="chatbot-body" id="chatbotBody">
+        <div class="d-flex flex-column" id="chatMessages">
+            <!-- Messages will be added here dynamically -->
+        </div>
+    </div>
+    <div class="chatbot-footer" id="chatbotFooter">
+        <div class="input-group">
+            <input type="text" class="form-control" id="userInput" placeholder="Type your message...">
+            <button class="btn btn-primary" id="sendMessage">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Include the JavaScript -->
+<script>
+    // chatbot.js
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotBody = document.getElementById('chatbotBody');
+    const chatbotFooter = document.getElementById('chatbotFooter');
+    const chatbotIcon = document.getElementById('chatbotIcon');
+    const sendMessageBtn = document.getElementById('sendMessage');
+    const userInput = document.getElementById('userInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Toggle chatbot visibility
+    chatbotToggle.addEventListener('click', function() {
+        if (chatbotBody.style.display === 'none' || chatbotBody.style.display === '') {
+            chatbotBody.style.display = 'block';
+            chatbotFooter.style.display = 'block';
+            chatbotIcon.classList.remove('fa-chevron-up');
+            chatbotIcon.classList.add('fa-chevron-down');
+            // Scroll to bottom when opening
+            setTimeout(() => {
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+            }, 100);
+        } else {
+            chatbotBody.style.display = 'none';
+            chatbotFooter.style.display = 'none';
+            chatbotIcon.classList.remove('fa-chevron-down');
+            chatbotIcon.classList.add('fa-chevron-up');
+        }
+    });
+
+    // Send message on button click or Enter key
+    sendMessageBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initial bot greeting
+    addBotMessage("Hello! I'm your Complaint Management Assistant. How can I help you today?");
+    addBotMessage("I can help you:<ul><li>Create a new complaint ticket</li><li>Check the status of existing complaints</li><li>Provide analytics on complaints</li><li>Answer questions about our complaint process</li></ul>");
+
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+            addUserMessage(message);
+            userInput.value = '';
+            processUserMessage(message);
+        }
+    }
+
+    function addUserMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chatbot-message user-message';
+        messageDiv.innerHTML = message;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function addBotMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chatbot-message bot-message';
+        messageDiv.innerHTML = message;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    }
+
+    function processUserMessage(message) {
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'chatbot-message bot-message';
+        typingIndicator.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
+        chatMessages.appendChild(typingIndicator);
+        scrollToBottom();
+
+        // Remove typing indicator after delay
+        setTimeout(() => {
+            chatMessages.removeChild(typingIndicator);
+            
+            // Process the message and generate response
+            const response = generateResponse(message.toLowerCase());
+            
+            // Simulate typing effect
+            typeResponse(response);
+        }, 1000);
+    }
+
+    function typeResponse(response) {
+        let i = 0;
+        const responseDiv = document.createElement('div');
+        responseDiv.className = 'chatbot-message bot-message';
+        chatMessages.appendChild(responseDiv);
+        
+        const typingInterval = setInterval(() => {
+            if (i < response.length) {
+                responseDiv.innerHTML += response.charAt(i);
+                scrollToBottom();
+                i++;
+            } else {
+                clearInterval(typingInterval);
+            }
+        }, 20);
+    }
+
+    function generateResponse(message) {
+        // Simple response logic - in a real app you'd call an API endpoint
+        if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+            return "Hello! How can I assist you with your complaint today?";
+        } else if (message.includes('new') || message.includes('create') || message.includes('ticket')) {
+            return "To create a new complaint, click the 'New Complaint' button at the top of the page. You'll need to specify the software, organization, and describe the problem. Would you like me to guide you through the process?";
+        } else if (message.includes('status') || message.includes('check') || message.includes('track')) {
+            return "I can check the status of complaints. Please provide me with the complaint ID or the name of the organization and software involved.";
+        } else if (message.includes('analytics') || message.includes('stats') || message.includes('report')) {
+            return "The dashboard shows current analytics. You can view complaint statistics by software, status, and time period. Would you like to see specific statistics?";
+        } else if (message.includes('help')) {
+            return "I can help with: <ul><li>Creating new complaints</li><li>Checking complaint status</li><li>Providing analytics</li><li>Answering process questions</li></ul> What would you like help with?";
+        } else if (message.includes('software') && message.includes('list')) {
+            return "Our supported software includes: ERP System, CRM Software, Accounting Suite, and HR Management. Which software are you inquiring about?";
+        } else if (message.includes('contact') || message.includes('support')) {
+            return "For direct support, please contact our help desk at support@example.com or call +1 (555) 123-4567.";
+        } else {
+            return "I'm sorry, I didn't understand that. Could you rephrase your question about complaints? Here are some things I can help with: <ul><li>Creating new complaints</li><li>Checking status</li><li>Providing analytics</li></ul>";
+        }
+    }
+});
+</script>

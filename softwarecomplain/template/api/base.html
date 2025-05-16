@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --dark-color: #5a5c69;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f9fc;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, #224abe 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar-brand {
+            height: 4.375rem;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 800;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            letter-spacing: 0.05rem;
+            z-index: 1;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        .stat-card {
+            border-left: 0.25rem solid;
+        }
+
+        .stat-card.primary {
+            border-left-color: var(--primary-color);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--secondary-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            z-index: 1000;
+        }
+
+        .chatbot-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            cursor: pointer;
+        }
+
+        .chatbot-body {
+            background-color: white;
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            display: none;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+        }
+
+        .chatbot-footer {
+            background-color: #f8f9fc;
+            padding: 10px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            display: none;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+
+        .chatbot-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: var(--primary-color);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message {
+            background-color: #e9ecef;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+
+        .complaint-item:hover {
+            background-color: #f8f9fc;
+            cursor: pointer;
+        }
+
+        .priority-high {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .priority-medium {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .priority-low {
+            border-left: 4px solid var(--secondary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    {% block content %}
+    {% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Toggle chatbot visibility
+        document.getElementById('chatbotToggle').addEventListener('click', function () {
+            const body = document.getElementById('chatbotBody');
+            const footer = document.getElementById('chatbotFooter');
+            const icon = document.getElementById('chatbotIcon');
+
+            if (body.style.display === 'none' || body.style.display === '') {
+                body.style.display = 'block';
+                footer.style.display = 'block';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            } else {
+                body.style.display = 'none';
+                footer.style.display = 'none';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            }
+        });
+
+        // Send message functionality
+        document.getElementById('sendMessage').addEventListener('click', sendMessage);
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+
+            if (message) {
+                // Add user message to chat
+                addMessage(message, 'user');
+
+                // Process message and generate bot response
+                processUserMessage(message);
+
+                // Clear input
+                userInput.value = '';
+            }
+        }
+
+        function addMessage(message, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chatbot-message ${sender}-message`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+
+            // Scroll to bottom
+            document.getElementById('chatbotBody').scrollTop = document.getElementById('chatbotBody').scrollHeight;
+        }
+
+        function processUserMessage(message) {
+            // This is where you would integrate with your LLM
+            // For now, we'll use simple pattern matching
+
+            let response = "I'm sorry, I didn't understand that. Could you rephrase your question?";
+
+            if (message.toLowerCase().includes('new complaint') || message.toLowerCase().includes('create')) {
+                response = "To create a new complaint, please click the 'New Complaint' button at the top of the dashboard or provide me with the details of your complaint.";
+            } else if (message.toLowerCase().includes('status') || message.toLowerCase().includes('check')) {
+                response = "To check the status of a complaint, please provide me with the complaint ID or the customer name associated with the complaint.";
+            } else if (message.toLowerCase().includes('analytics') || message.toLowerCase().includes('stats')) {
+                response = "The dashboard shows current analytics. We have 1,248 total complaints with 892 resolved (71.5% resolution rate). 256 are in progress and 100 are overdue.";
+            } else if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+                response = "Hello! How can I assist you with your complaint management needs today?";
+            } else if (message.toLowerCase().includes('help')) {
+                response = "I can help you with creating complaints, checking statuses, providing analytics, and answering questions about our complaint process. What would you like help with?";
+            }
+
+            // Simulate typing delay
+            setTimeout(() => {
+                addMessage(response, 'bot');
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,388 @@
+{% extends 'api/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% include 'api/sidebar.html' %}
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+            <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Software Complaint Dashboard</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <div class="btn-group me-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary">Print</button>
+                    </div>
+                    <a href="{% url 'complain_create' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i> New Complaint
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card primary h-100">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Total Complaints</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_complaints }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-bug fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card success h-100">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Resolved</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ resolved_complaints }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card warning h-100">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        In Progress</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{in_progress_complaints}}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-spinner fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card stat-card danger h-100">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                        Not Resolved</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ not_resolved_complaints }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Recent Complaints -->
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">Complaints Overview</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas id="complaintsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0 font-weight-bold text-primary">Complaints by Software</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-pie pt-4 pb-2">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                            <div class="mt-4 text-center small">
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-primary"></i> Product
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-success"></i> Service
+                                </span>
+                                <span class="me-2">
+                                    <i class="fas fa-circle text-info"></i> Delivery
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Complaints Table -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Recent Software Complaints</h6>
+                    <div class="text-muted small">Showing 1 to 5 of {{ total_complaints }} entries</div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="recentComplaints">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Software</th>
+                                    <th>Organization</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for complaint in recent_complaints %}
+                                <tr class="complaint-item status-{{ complaint.status }}">
+                                    <td>#SC-{{ complaint.id }}</td>
+                                    <td>{{ complaint.software.name }}</td>
+                                    <td>{{ complaint.organization }}</td>
+                                    <td class="text-truncate" style="max-width: 200px;">{{ complaint.problem_description}}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if complaint.status == 'initiated' %}bg-secondary
+                                            {% elif complaint.status == 'in_progress' %}bg-warning
+                                            {% else %}bg-success{% endif %}">
+                                            {{ complaint.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ complaint.created_at|timesince }} ago</td>
+                                    <td>
+                                        <a href="{% url 'complain_detail' complaint.pk %}"
+                                            class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'complain_update' complaint.pk %}"
+                                            class="btn btn-sm btn-success">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% include 'api/chatbot.html' %}
+        </main>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // chatbot.js
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotBody = document.getElementById('chatbotBody');
+    const chatbotFooter = document.getElementById('chatbotFooter');
+    const chatbotIcon = document.getElementById('chatbotIcon');
+    const sendMessageBtn = document.getElementById('sendMessage');
+    const userInput = document.getElementById('userInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    // Toggle chatbot visibility
+    chatbotToggle.addEventListener('click', function() {
+        if (chatbotBody.style.display === 'none' || chatbotBody.style.display === '') {
+            chatbotBody.style.display = 'block';
+            chatbotFooter.style.display = 'block';
+            chatbotIcon.classList.remove('fa-chevron-up');
+            chatbotIcon.classList.add('fa-chevron-down');
+            // Scroll to bottom when opening
+            setTimeout(() => {
+                chatbotBody.scrollTop = chatbotBody.scrollHeight;
+            }, 100);
+        } else {
+            chatbotBody.style.display = 'none';
+            chatbotFooter.style.display = 'none';
+            chatbotIcon.classList.remove('fa-chevron-down');
+            chatbotIcon.classList.add('fa-chevron-up');
+        }
+    });
+
+    // Send message on button click or Enter key
+    sendMessageBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initial bot greeting
+    addBotMessage("Hello! I'm your Complaint Management Assistant. How can I help you today?");
+    addBotMessage("I can help you:<ul><li>Create a new complaint ticket</li><li>Check the status of existing complaints</li><li>Provide analytics on complaints</li><li>Answer questions about our complaint process</li></ul>");
+
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+            addUserMessage(message);
+            userInput.value = '';
+            processUserMessage(message);
+        }
+    }
+
+    function addUserMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chatbot-message user-message';
+        messageDiv.innerHTML = message;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function addBotMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'chatbot-message bot-message';
+        messageDiv.innerHTML = message;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    }
+
+    function processUserMessage(message) {
+        // Show typing indicator
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'chatbot-message bot-message';
+        typingIndicator.innerHTML = '<i class="fas fa-ellipsis-h"></i>';
+        chatMessages.appendChild(typingIndicator);
+        scrollToBottom();
+
+        // Remove typing indicator after delay
+        setTimeout(() => {
+            chatMessages.removeChild(typingIndicator);
+            
+            // Process the message and generate response
+            const response = generateResponse(message.toLowerCase());
+            
+            // Simulate typing effect
+            typeResponse(response);
+        }, 1000);
+    }
+
+    function typeResponse(response) {
+        let i = 0;
+        const responseDiv = document.createElement('div');
+        responseDiv.className = 'chatbot-message bot-message';
+        chatMessages.appendChild(responseDiv);
+        
+        const typingInterval = setInterval(() => {
+            if (i < response.length) {
+                responseDiv.innerHTML += response.charAt(i);
+                scrollToBottom();
+                i++;
+            } else {
+                clearInterval(typingInterval);
+            }
+        }, 20);
+    }
+
+    function generateResponse(message) {
+        // Simple response logic - in a real app you'd call an API endpoint
+        if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+            return "Hello! How can I assist you with your complaint today?";
+        } else if (message.includes('new') || message.includes('create') || message.includes('ticket')) {
+            return "To create a new complaint, click the 'New Complaint' button at the top of the page. You'll need to specify the software, organization, and describe the problem. Would you like me to guide you through the process?";
+        } else if (message.includes('status') || message.includes('check') || message.includes('track')) {
+            return "I can check the status of complaints. Please provide me with the complaint ID or the name of the organization and software involved.";
+        } else if (message.includes('analytics') || message.includes('stats') || message.includes('report')) {
+            return "The dashboard shows current analytics. You can view complaint statistics by software, status, and time period. Would you like to see specific statistics?";
+        } else if (message.includes('help')) {
+            return "I can help with: <ul><li>Creating new complaints</li><li>Checking complaint status</li><li>Providing analytics</li><li>Answering process questions</li></ul> What would you like help with?";
+        } else if (message.includes('software') && message.includes('list')) {
+            return "Our supported software includes: ERP System, CRM Software, Accounting Suite, and HR Management. Which software are you inquiring about?";
+        } else if (message.includes('contact') || message.includes('support')) {
+            return "For direct support, please contact our help desk at support@example.com or call +1 (555) 123-4567.";
+        } else {
+            return "I'm sorry, I didn't understand that. Could you rephrase your question about complaints? Here are some things I can help with: <ul><li>Creating new complaints</li><li>Checking status</li><li>Providing analytics</li></ul>";
+        }
+    }
+});
+</script>
+<script>
+    const softwareData = JSON.parse('{{ software_data|escapejs }}');
+    const statusData = JSON.parse('{{ status_data|escapejs }}');
+
+    // Extract labels and data for software chart
+    const softwareLabels = softwareData.map(item => item.software__name);
+    const softwareCounts = softwareData.map(item => item.total);
+
+    // Extract labels and data for status chart
+    const statusLabels = statusData.map(item => item.status);
+    const statusCounts = statusData.map(item => item.total);
+
+    // Line or Bar Chart - Complaints Overview
+    const ctx1 = document.getElementById('complaintsChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: softwareLabels,
+            datasets: [{
+                label: 'Complaints',
+                data: softwareCounts,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Pie Chart - Complaints by Status
+    const ctx2 = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                label: 'Status',
+                data: statusCounts,
+                backgroundColor: [
+                    '#4e73df',
+                    '#1cc88a',
+                    '#36b9cc',
+                    '#f6c23e',
+                    '#e74a3b'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
